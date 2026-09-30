@@ -15,9 +15,23 @@ jobs:
 
       - name: Extract Android Project
         run: |
-          unzip -q Zarin_zinan_apk_ready.zip -d extracted
-          echo "Extracted files:"
-          find extracted -maxdepth 3 -type f | head -100
+          - name: Find and Extract Android Project
+  run: |
+    ZIP_FILE=$(find . -type f \( -iname "*.zip" \) | head -1)
+
+    if [ -z "$ZIP_FILE" ]; then
+      echo "ERROR: No ZIP file found!"
+      find . -maxdepth 3 -type f
+      exit 1
+    fi
+
+    echo "Found ZIP: $ZIP_FILE"
+
+    mkdir -p extracted
+    unzip -q "$ZIP_FILE" -d extracted
+
+    echo "Extracted files:"
+    find extracted -maxdepth 4 -type f | head -100
 
       - name: Find Gradle Project
         run: |
