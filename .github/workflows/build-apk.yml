@@ -13,35 +13,48 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Find ZIP file
+        run: |
+          echo "Files in repository:"
+          find . -maxdepth 4 -type f
+
+          ZIP_FILE=$(find . -type f -iname "*.zip" | head -1)
+
+          if [ -z "$ZIP_FILE" ]; then
+            echo "ERROR: No ZIP file found in repository."
+            exit 1
+          fi
+
+          echo "ZIP file found: $ZIP_FILE"
+          echo "ZIP_FILE=$ZIP_FILE" >> "$GITHUB_ENV"
+
       - name: Extract Android Project
         run: |
-          - name: Find and Extract Android Project
-  run: |
-    ZIP_FILE=$(find . -type f \( -iname "*.zip" \) | head -1)
+          mkdir -p extracted
+          unzip -q "$ZIP_FILE" -d extracted
 
-    if [ -z "$ZIP_FILE" ]; then
-      echo "ERROR: No ZIP file found!"
-      find . -maxdepth 3 -type f
-      exit 1
-    fi
-
-    echo "Found ZIP: $ZIP_FILE"
-
-    mkdir -p extracted
-    unzip -q "$ZIP_FILE" -d extracted
-
-    echo "Extracted files:"
-    find extracted -maxdepth 4 -type f | head -100
+          echo "Extracted project:"
+          find extracted -maxdepth 5 -type f | head -200
 
       - name: Find Gradle Project
         run: |
-          SETTINGS=$(find extracted -name "settings.gradle" -o -name "settings.gradle.kts" | head -1)
+          SETTINGS=$(find extracted -type f \( \
+            -name "settings.gradle" -o \
+            -name "settings.gradle.kts" \
+          \) | head -1)
+
           if [ -z "$SETTINGS" ]; then
-            echo "ERROR: settings.gradle not found!"
+            echo "ERROR: settings.gradle or settings.gradle.kts not found."
+            echo "All extracted files:"
+            find extracted -type f
             exit 1
           fi
+
           PROJECT_DIR=$(dirname "$SETTINGS")
-          echo "Gradle project found at: $PROJECT_DIR"
+
+          echo "Gradle project found:"
+          echo "$PROJECT_DIR"
+
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
 
       - name: Set up JDK 17
@@ -58,10 +71,23 @@ jobs:
       - name: Build debug APK
         run: |
           cd "$PROJECT_DIR"
+
+          echo "Building from:"
+          pwd
+
+          echo "Project files:"
+          ls -la
+
           gradle assembleDebug --stacktrace
+
+      - name: Find APK
+        run: |
+          echo "Searching for APK..."
+          find extracted -type f -name "*.apk" -print
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Zarin-Zinan-debug-apk
           path: extracted/**/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
