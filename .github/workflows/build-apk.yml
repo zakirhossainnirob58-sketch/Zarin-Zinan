@@ -83,7 +83,22 @@ jobs:
       - name: Find APK
         run: |
           echo "Searching for APK..."
-          find extracted -type f -name "*.apk" -print
+          find extracted -type f -name "*.apk" -print      - name: Check App Permissions
+        run: |
+          echo "Searching for AndroidManifest.xml..."
+
+          MANIFEST=$(find extracted -type f -name "AndroidManifest.xml" | head -1)
+
+          if [ -z "$MANIFEST" ]; then
+            echo "AndroidManifest.xml not found!"
+            exit 1
+          fi
+
+          echo "Manifest found at:"
+          echo "$MANIFEST"
+
+          echo "Checking permissions:"
+          grep -o 'android.permission.[A-Z_]*' "$MANIFEST" | sort -u || true
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
