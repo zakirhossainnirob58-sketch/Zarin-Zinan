@@ -79,8 +79,7 @@ jobs:
           ls -la
 
           gradle assembleDebug --stacktrace
-
-      - name:       - name: Find APK
+                - name: Find APK
         run: |
           echo "Searching for APK..."
           find extracted -type f -name "*.apk" -print
