@@ -82,6 +82,9 @@ jobs:
                 - name: Build debug APK
           run: |
             cd "$PROJECT_DIR"
+                  - name: Build debug APK
+          run: |
+            cd "$PROJECT_DIR"
             gradle assembleDebug --stacktrace
 
         - name: Find APK
