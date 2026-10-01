@@ -11,47 +11,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Find ZIP file
         run: |
-          echo "Searching for ZIP file..."
           ZIP_FILE=$(find . -type f -iname "*.zip" | head -1)
-
           if [ -z "$ZIP_FILE" ]; then
             echo "ZIP file not found!"
             exit 1
           fi
-
-          echo "ZIP found:"
-          echo "$ZIP_FILE"
-
-          echo "Extracting ZIP..."
           mkdir -p extracted
           unzip -o "$ZIP_FILE" -d extracted
 
       - name: Find Gradle project
         run: |
-          echo "Searching for Gradle project..."
-
-          SETTINGS_FILE=$(find extracted -type f \( \
-            -name "settings.gradle" -o \
-            -name "settings.gradle.kts" \
-          \) | head -1)
-
+          SETTINGS_FILE=$(find extracted -type f \( -name "settings.gradle" -o -name "settings.gradle.kts" \) | head -1)
           if [ -z "$SETTINGS_FILE" ]; then
             echo "settings.gradle not found!"
             exit 1
           fi
-
           PROJECT_DIR=$(dirname "$SETTINGS_FILE")
-
-          echo "Gradle project found:"
-          echo "$PROJECT_DIR"
-
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
+          echo "Gradle project: $PROJECT_DIR"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -67,73 +49,24 @@ jobs:
       - name: Build debug APK
         run: |
           cd "$PROJECT_DIR"
-
-          echo "Building from:"
-          pwd
-
-          echo "Project files:"
-          ls -la
-
           gradle assembleDebug --stacktrace
-
-      - name: Find APK
-        run: |
-          echo "Searching for APK..."
-
-          APK_FILE=$(find extracted -type f -name "*.apk" | head -1)
-
-          if [ -z "$APK_FILE" ]; then
-            echo "APK not found!"
-            exit 1
-          fi
-
-          echo "APK found:"
-          echo "$APK_FILE"
 
       - name: Check App Permissions
         run: |
-          echo "Searching for AndroidManifest.xml..."
-
           MANIFEST=$(find extracted -type f -name "AndroidManifest.xml" | head -1)
-
-          if [ -z "$MANIFEST" ]; then
-            echo "AndroidManifest.xml not found!"
-            exit 1
-          fi
-
-          echo "Manifest found at:"
-          echo "$MANIFEST"
-
-          echo ""
           echo "========== APP PERMISSIONS =========="
           grep -o 'android.permission.[A-Z_]*' "$MANIFEST" | sort -u || true
           echo "====================================="
 
-      - name: Security Check
-        run: |
-          echo ""
-          echo "========== SECURITY CHECK =========="
-
-          echo ""
-          echo "Checking suspicious permissions:"
-          grep -RniE "READ_SMS|SEND_SMS|RECEIVE_SMS|CALL_PHONE|READ_CONTACTS|WRITE_CONTACTS|RECORD_AUDIO|CAMERA|ACCESS_FINE_LOCATION|ACCESS_COARSE_LOCATION|READ_PHONE_STATE" extracted --include="*.xml" --include="*.gradle" --include="*.gradle.kts" || true
-
-          echo ""
-          echo "Checking network URLs:"
-          grep -RohE "https?://[^\"' ]+" extracted --include="*.java" --include="*.kt" --include="*.xml" --include="*.gradle" --include="*.gradle.kts" | sort -u | head -100 || true
-
-          echo ""
-          echo "Checking suspicious WebView / external loading:"
-          grep -RniE "WebView|loadUrl|addJavascriptInterface" extracted --include="*.java" --include="*.kt" --include="*.xml" || true
-
-          echo ""
-          echo "========== END SECURITY CHECK =========="      - name: Check HTML Security
+      - name: Check HTML Security
         run: |
           echo "========== HTML SECURITY CHECK =========="
-
           grep -RniE "fetch\(|XMLHttpRequest|axios|https?://|location\.href|window\.open|localStorage|document\.cookie" extracted/app/src/main/assets --include="*.html" --include="*.js" || true
-
           echo "========== END HTML SECURITY CHECK =========="
+
+      - name: Find APK
+        run: |
+          find extracted -type f -name "*.apk"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
