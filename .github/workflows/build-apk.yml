@@ -127,7 +127,13 @@ jobs:
           grep -RniE "WebView|loadUrl|addJavascriptInterface" extracted --include="*.java" --include="*.kt" --include="*.xml" || true
 
           echo ""
-          echo "========== END SECURITY CHECK =========="
+          echo "========== END SECURITY CHECK =========="      - name: Check HTML Security
+        run: |
+          echo "========== HTML SECURITY CHECK =========="
+
+          grep -RniE "fetch\(|XMLHttpRequest|axios|https?://|location\.href|window\.open|localStorage|document\.cookie" extracted/app/src/main/assets --include="*.html" --include="*.js" || true
+
+          echo "========== END HTML SECURITY CHECK =========="
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
