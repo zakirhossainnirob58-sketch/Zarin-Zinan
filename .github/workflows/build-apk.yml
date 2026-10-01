@@ -108,6 +108,25 @@ jobs:
           echo "========== APP PERMISSIONS =========="
           grep -o 'android.permission.[A-Z_]*' "$MANIFEST" | sort -u || true
           echo "====================================="
+                - name: Security Check
+        run: |
+          echo ""
+          echo "========== SECURITY CHECK =========="
+
+          echo ""
+          echo "Checking suspicious permissions:"
+          grep -RniE "READ_SMS|SEND_SMS|RECEIVE_SMS|CALL_PHONE|READ_CONTACTS|WRITE_CONTACTS|RECORD_AUDIO|CAMERA|ACCESS_FINE_LOCATION|ACCESS_COARSE_LOCATION|READ_PHONE_STATE" extracted --include="*.xml" --include="*.gradle" --include="*.gradle.kts" || true
+
+          echo ""
+          echo "Checking network URLs:"
+          grep -RohE "https?://[^\"' ]+" extracted --include="*.java" --include="*.kt" --include="*.xml" --include="*.gradle" --include="*.gradle.kts" | sort -u | head -100 || true
+
+          echo ""
+          echo "Checking suspicious WebView / external loading:"
+          grep -RniE "WebView|loadUrl|addJavascriptInterface" extracted --include="*.java" --include="*.kt" --include="*.xml" || true
+
+          echo ""
+          echo "========== END SECURITY CHECK =========="
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
