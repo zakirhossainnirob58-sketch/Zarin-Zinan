@@ -90,7 +90,7 @@ jobs:
           echo "APK found:"
           echo "$APK_FILE"
 
-      - name: Check App Permissions
+      -      - name: Check App Permissions
         run: |
           echo "Searching for AndroidManifest.xml..."
 
@@ -108,7 +108,8 @@ jobs:
           echo "========== APP PERMISSIONS =========="
           grep -o 'android.permission.[A-Z_]*' "$MANIFEST" | sort -u || true
           echo "====================================="
-                - name: Security Check
+
+      - name: Security Check
         run: |
           echo ""
           echo "========== SECURITY CHECK =========="
