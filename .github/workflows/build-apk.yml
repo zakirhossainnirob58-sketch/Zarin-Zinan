@@ -3,54 +3,50 @@ name: Build Zarin & Zinan APK
 on:
   workflow_dispatch:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
+
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Find ZIP file
         run: |
-          echo "Files in repository:"
-          find . -maxdepth 4 -type f
-
+          echo "Searching for ZIP file..."
           ZIP_FILE=$(find . -type f -iname "*.zip" | head -1)
 
           if [ -z "$ZIP_FILE" ]; then
-            echo "ERROR: No ZIP file found in repository."
+            echo "ZIP file not found!"
             exit 1
           fi
 
-          echo "ZIP file found: $ZIP_FILE"
-          echo "ZIP_FILE=$ZIP_FILE" >> "$GITHUB_ENV"
+          echo "ZIP found:"
+          echo "$ZIP_FILE"
 
-      - name: Extract Android Project
-        run: |
+          echo "Extracting ZIP..."
           mkdir -p extracted
-          unzip -q "$ZIP_FILE" -d extracted
+          unzip -o "$ZIP_FILE" -d extracted
 
-          echo "Extracted project:"
-          find extracted -maxdepth 5 -type f | head -200
-
-      - name: Find Gradle Project
+      - name: Find Gradle project
         run: |
-          SETTINGS=$(find extracted -type f \( \
+          echo "Searching for Gradle project..."
+
+          SETTINGS_FILE=$(find extracted -type f \( \
             -name "settings.gradle" -o \
             -name "settings.gradle.kts" \
           \) | head -1)
 
-          if [ -z "$SETTINGS" ]; then
-            echo "ERROR: settings.gradle or settings.gradle.kts not found."
-            echo "All extracted files:"
-            find extracted -type f
+          if [ -z "$SETTINGS_FILE" ]; then
+            echo "settings.gradle not found!"
             exit 1
           fi
 
-          PROJECT_DIR=$(dirname "$SETTINGS")
+          PROJECT_DIR=$(dirname "$SETTINGS_FILE")
 
           echo "Gradle project found:"
           echo "$PROJECT_DIR"
@@ -79,11 +75,20 @@ jobs:
           ls -la
 
           gradle assembleDebug --stacktrace
-                - name: Build debug APK
-                - name: Find APK
+
+      - name: Find APK
         run: |
           echo "Searching for APK..."
-          find extracted -type f -name "*.apk" -print
+
+          APK_FILE=$(find extracted -type f -name "*.apk" | head -1)
+
+          if [ -z "$APK_FILE" ]; then
+            echo "APK not found!"
+            exit 1
+          fi
+
+          echo "APK found:"
+          echo "$APK_FILE"
 
       - name: Check App Permissions
         run: |
@@ -99,8 +104,10 @@ jobs:
           echo "Manifest found at:"
           echo "$MANIFEST"
 
-          echo "Checking permissions:"
+          echo ""
+          echo "========== APP PERMISSIONS =========="
           grep -o 'android.permission.[A-Z_]*' "$MANIFEST" | sort -u || true
+          echo "====================================="
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -108,32 +115,3 @@ jobs:
           name: Zarin-Zinan-debug-apk
           path: extracted/**/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
-
-        - name: Find APK
-          run: |
-            echo "Searching for APK..."
-            find extracted -type f -name "*.apk" -print
-
-        - name: Check App Permissions
-          run: |
-            echo "Searching for AndroidManifest.xml..."
-
-            MANIFEST=$(find extracted -type f -name "AndroidManifest.xml" | head -1)
-
-            if [ -z "$MANIFEST" ]; then
-              echo "AndroidManifest.xml not found!"
-              exit 1
-            fi
-
-            echo "Manifest found at:"
-            echo "$MANIFEST"
-
-            echo "Checking permissions:"
-            grep -o 'android.permission.[A-Z_]*' "$MANIFEST" | sort -u || true
-
-        - name: Upload APK
-          uses: actions/upload-artifact@v4
-          with:
-            name: Zarin-Zinan-debug-apk
-            path: extracted/**/app/build/outputs/apk/debug/*.apk
-            if-no-files-found: error
