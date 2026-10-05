@@ -125,8 +125,14 @@ function render(){
 <button onclick="track(${i})">👁️ কাস্টমার ভিউ</button> <button onclick="wa(${i})">💬 WhatsApp</button> <button onclick="setStatus(${i})">➡️ পরের ধাপ</button></div>`).join(''):'<div class="card muted">এখনও কোনো অর্ডার নেই।</div>';
  homeOrders.innerHTML=orders.slice(0,4).map((o,i)=>`<div class="card"><b>${o.name}</b><br><span class="status">${o.status}</span> · ${o.delivery||'—'} <button onclick="track(${i})">দেখুন</button></div>`).join('')||'<p class="muted">কোনো চলমান অর্ডার নেই।</p>';
  stockList.innerHTML=stocks.map(s=>`<div class="card"><div class="row"><b>${s.name}</b><span>${s.qty} গজ</span></div><div class="small">${s.color||''} · ক্রয় ৳${s.buy}/গজ · বিক্রয় ৳${s.sell}/গজ · সম্ভাব্য মার্জিন ৳${(s.sell-s.buy)*s.qty}</div></div>`).join('')||'<div class="card muted">কোনো স্টক নেই।</div>';
- let sales=orders.reduce((a,o)=>a+o.price,0), due=orders.reduce((a,o)=>a+(o.price-o.advance),0);
- sales.textContent='৳'+sales; due.textContent='৳'+due; let estCost=orders.reduce((a,o)=>a+(o.cost||0),0); profit.textContent='৳'+Math.max(0,sales-estCost); expense.textContent='৳'+estCost;
+ let totalSales=orders.reduce((a,o)=>a+o.price,0);
+let totalDue=orders.reduce((a,o)=>a+(o.price-o.advance),0);
+let estCost=orders.reduce((a,o)=>a+(o.cost||0),0);
+
+document.getElementById('sales').textContent='৳'+totalSales;
+document.getElementById('due').textContent='৳'+totalDue;
+document.getElementById('profit').textContent='৳'+Math.max(0,totalSales-estCost);
+document.getElementById('expense').textContent='৳'+estCost;
 }
 render();
 </script>
