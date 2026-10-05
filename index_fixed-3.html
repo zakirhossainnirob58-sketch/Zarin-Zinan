@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Zarin & Zinan</title>
+<style>
+body{font-family:system-ui,sans-serif;margin:0;background:#f5f6f8;color:#17202a}
+header{background:#173b32;color:#fff;padding:18px}
+h1,h2{margin:0 0 8px}.wrap{max-width:900px;margin:auto;padding:14px}
+nav{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+button{border:0;border-radius:10px;padding:11px 12px;background:#173b32;color:white;font-weight:600}
+.card{background:white;border-radius:14px;padding:15px;margin:10px 0;box-shadow:0 2px 10px #0000000d}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+input,select{width:100%;box-sizing:border-box;padding:11px;border:1px solid #ddd;border-radius:9px;margin:5px 0 10px}
+.stat{font-size:22px;font-weight:700}.muted{color:#687078;font-size:13px}
+.hidden{display:none}.row{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.status{padding:6px 9px;border-radius:20px;background:#e9f4ef;font-size:12px}
+.danger{background:#fff0f0}.tabs button{background:#fff;color:#173b32;border:1px solid #ddd}
+.small{font-size:13px}
+</style>
+</head>
+<body>
+
+<header><div class="wrap"><h1>🏪 Zarin & Zinan</h1><div>Panjabi • কাপড় • সেলাই • অর্ডার • হিসাব</div></div></header>
+<div class="wrap">
+
+<div class="card"><b>🔐 ব্যবহারকারী</b>
+<select id="role" onchange="setRole(this.value)">
+<option value="admin">Admin — দোকানদার</option>
+<option value="customer">Customer — অর্ডার দেখুন</option>
+</select>
+</div>
+
+<nav>
+<button onclick="show('home')">🏠 Dashboard</button>
+<button onclick="show('orders')">✂️ অর্ডার</button>
+<button onclick="show('stock')">🧵 স্টক</button>
+</nav>
+
+<section id="home">
+<div class="card"><h2>আজকের হিসাব</h2><div class="grid">
+<div>💰 বিক্রি<div class="stat" id="sales">৳0</div></div>
+<div>📈 লাভ<div class="stat" id="profit">৳0</div></div>
+<div>💸 খরচ<div class="stat" id="expense">৳0</div></div>
+<div>🧾 বাকি<div class="stat" id="due">৳0</div></div>
+</div></div>
+
+<div class="card"><h2>⚡ দ্রুত কাজ</h2>
+<button onclick="show('neworder')">➕ নতুন কাস্টম অর্ডার</button>
+<button onclick="show('newstock')">🧵 কাপড় যোগ করুন</button>
+</div>
+
+<div class="card"><h2>📦 চলমান অর্ডার</h2><div id="homeOrders"></div></div>
+</section>
+
+<section id="orders" class="hidden">
+<div class="row"><h2>✂️ অর্ডার</h2><button onclick="show('neworder')">+ নতুন</button></div>
+<div id="orderList"></div>
+</section>
+
+<section id="neworder" class="hidden">
+<div class="card"><h2>নতুন কাস্টম পাঞ্জাবি</h2>
+<label>কাস্টমারের নাম<input id="cname"></label>
+<label>মোবাইল নম্বর<input id="phone" inputmode="tel"></label>
+<label>কাপড়<input id="fabric"></label>
+<div class="grid">
+<label>বুক (ইঞ্চি)<input id="chest"></label>
+<label>লম্বা<input id="length"></label>
+<label>হাতা<input id="sleeve"></label>
+<label>কাঁধ<input id="shoulder"></label>
+</div>
+<label>মোট বিক্রয়মূল্য<input id="price" type="number"></label>
+<label>অগ্রিম<input id="advance" type="number" value="0"></label>
+<label>ডেলিভারি তারিখ<input id="delivery" type="date"></label>
+<label>নোট<input id="note"></label>
+<button onclick="addOrder()">💾 অর্ডার সংরক্ষণ</button>
+</div>
+</section>
+
+<section id="stock" class="hidden">
+<div class="row"><h2>🧵 কাপড়ের স্টক</h2><button onclick="show('newstock')">+ যোগ</button></div>
+<div id="stockList"></div>
+</section>
+
+<section id="newstock" class="hidden">
+<div class="card"><h2>নতুন কাপড়</h2>
+<label>কাপড়ের নাম<input id="sname"></label>
+<label>রং<input id="color"></label>
+<label>পরিমাণ (গজ)<input id="qty" type="number" step="0.01"></label>
+<label>ক্রয়মূল্য/গজ<input id="buy" type="number"></label>
+<label>বিক্রয়মূল্য/গজ<input id="sell" type="number"></label>
+<button onclick="addStock()">💾 স্টকে যোগ করুন</button>
+</div>
+</section>
+
+<section id="track" class="hidden">
+<div class="card" id="trackCard"></div>
+</section>
+
+</div>
+
+<script>
+const keyO='zz_orders',keyS='zz_stock';
+let orders=JSON.parse(localStorage.getItem(keyO)||'[]');
+let stocks=JSON.parse(localStorage.getItem(keyS)||'[]');
+
+function save(){
+  localStorage.setItem(keyO,JSON.stringify(orders));
+  localStorage.setItem(keyS,JSON.stringify(stocks));
+  render();
+}
+
+function setRole(r){
+  localStorage.setItem('zz_role',r);
+  if(r==='customer') show('orders'); else show('home');
+}
+
+function wa(i){
+  const o=orders[i];
+  const msg=encodeURIComponent(`Zarin & Zinan
+অর্ডার: ${o.id}
+কাস্টমার: ${o.name}
+বর্তমান অবস্থা: ${o.status}
+ডেলিভারি: ${o.delivery||'নির্ধারিত নয়'}
+বাকি: ৳${o.price-o.advance}`);
+  if(o.phone) location.href='https://wa.me/'+o.phone.replace(/\D/g,'')+'?text='+msg;
+}
+
+function show(id){
+  document.querySelectorAll('section').forEach(x=>x.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  render();
+}
+
+function addOrder(){
+  const o={
+    id:'PN-'+String(Date.now()).slice(-6),
+    name:cname.value,
+    phone:phone.value,
+    fabric:fabric.value,
+    chest:chest.value,
+    length:length.value,
+    sleeve:sleeve.value,
+    shoulder:shoulder.value,
+    price:+price.value||0,
+    advance:+advance.value||0,
+    delivery:delivery.value,
+    note:note.value,
+    status:'অর্ডার নেওয়া হয়েছে',
+    cost:0,
+    created:new Date().toISOString()
+  };
+  orders.unshift(o);
+  save();
+  show('orders');
+}
+
+function addStock(){
+  const s={
+    name:sname.value,
+    color:color.value,
+    qty:+qty.value||0,
+    buy:+buy.value||0,
+    sell:+sell.value||0
+  };
+  stocks.unshift(s);
+  save();
+  show('stock');
+}
+
+function setStatus(i){
+  const statuses=['অর্ডার নেওয়া হয়েছে','কাপড় কাটা হয়েছে','সেলাই চলছে','ফিনিশিং/চেকিং','প্রস্তুত','ডেলিভারি সম্পন্ন'];
+  orders[i].status=statuses[(statuses.indexOf(orders[i].status)+1)%statuses.length];
+  save();
+}
+
+function track(i){
+  const o=orders[i];
+  show('track');
+  trackCard.innerHTML=`
+<h2>📦 ${o.id}</h2>
+<h3>${o.name}</h3>
+<p>👕 ${o.fabric||'—'} | 📅 ডেলিভারি: ${o.delivery||'নির্ধারিত নয়'}</p>
+<p>💰 মোট ৳${o.price} | 💳 অগ্রিম ৳${o.advance} | 🧾 বাকি ৳${o.price-o.advance}</p>
+<hr>
+<b>বর্তমান অবস্থা:</b>
+<p class="status">${o.status}</p>
+<p class="small">মাপ: বুক ${o.chest||'-'}, লম্বা ${o.length||'-'}, হাতা ${o.sleeve||'-'}, কাঁধ ${o.shoulder||'-'}</p>
+${o.note?'<p>নোট: '+o.note+'</p>':''}`;
+}
+
+function render(){
+  orderList.innerHTML=orders.length
+    ?orders.map((o,i)=>`<div class="card">
+<div class="row"><b>${o.id} — ${o.name}</b><span class="status">${o.status}</span></div>
+<div class="small">📅 ${o.delivery||'—'} | 💰 ৳${o.price} | 🧾 বাকি ৳${o.price-o.advance}</div><br>
+<button onclick="track(${i})">👁️ কাস্টমার ভিউ</button>
+<button onclick="wa(${i})">💬 WhatsApp</button>
+<button onclick="setStatus(${i})">➡️ পরের ধাপ</button>
+</div>`).join('')
+    :'<div class="card muted">এখনও কোনো অর্ডার নেই।</div>';
+
+  homeOrders.innerHTML=orders.slice(0,4).map((o,i)=>`<div class="card">
+<b>${o.name}</b><br>
+<span class="status">${o.status}</span> · ${o.delivery||'—'}
+<button onclick="track(${i})">দেখুন</button>
+</div>`).join('')||'<p class="muted">কোনো চলমান অর্ডার নেই।</p>';
+
+  stockList.innerHTML=stocks.map(s=>`<div class="card">
+<div class="row"><b>${s.name}</b><span>${s.qty} গজ</span></div>
+<div class="small">${s.color||''} · ক্রয় ৳${s.buy}/গজ · বিক্রয় ৳${s.sell}/গজ · সম্ভাব্য মার্জিন ৳${(s.sell-s.buy)*s.qty}</div>
+</div>`).join('')||'<div class="card muted">কোনো স্টক নেই।</div>';
+
+  const totalSales=orders.reduce((a,o)=>a+(Number(o.price)||0),0);
+  const totalDue=orders.reduce((a,o)=>a+((Number(o.price)||0)-(Number(o.advance)||0)),0);
+  const totalCost=orders.reduce((a,o)=>a+(Number(o.cost)||0),0);
+  const totalProfit=totalSales-totalCost;
+
+  document.getElementById('sales').textContent='৳'+totalSales;
+  document.getElementById('due').textContent='৳'+totalDue;
+  document.getElementById('expense').textContent='৳'+totalCost;
+  document.getElementById('profit').textContent='৳'+totalProfit;
+}
+
+render();
+</script>
+</body>
+</html>
