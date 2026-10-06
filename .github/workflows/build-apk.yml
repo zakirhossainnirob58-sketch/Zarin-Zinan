@@ -22,7 +22,9 @@ jobs:
             exit 1
           fi
           mkdir -p extracted
-          unzip -o "$ZIP_FILE" -d extracted
+          unzip -o "$ZIP_FILE" -d extracted      -       name: Replace HTML
+        run: |
+                    cp index.html "$(find extracted -type f -name 'MainActivity.java' -exec dirname {} \;)/index.html"
 
       - name: Find Gradle project
         run: |
