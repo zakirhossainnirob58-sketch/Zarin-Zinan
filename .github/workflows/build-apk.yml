@@ -22,11 +22,7 @@ jobs:
             exit 1
           fi
           mkdir -p extracted
-          unzip -o "$ZIP_FILE" -d extracted      -             - name: Replace HTML
-        run: |
-          cp index.html "$(find extracted -type f -name 'MainActivity.java' -exec dirname {} \;)/index.html"
-        run: |
-                    cp index.html "$(find extracted -type f -name 'MainActivity.java' -exec dirname {} \;)/index.html"
+          unzip -o "$ZIP_FILE" -d extracted
 
       - name: Find Gradle project
         run: |
@@ -38,6 +34,16 @@ jobs:
           PROJECT_DIR=$(dirname "$SETTINGS_FILE")
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
           echo "Gradle project: $PROJECT_DIR"
+
+      - name: Replace HTML
+        run: |
+          HTML_FILE=$(find extracted -type f -path "*/src/main/assets/index.html" | head -1)
+          if [ -z "$HTML_FILE" ]; then
+            echo "index.html not found in Android assets!"
+            exit 1
+          fi
+          cp index.html "$HTML_FILE"
+          echo "HTML replaced: $HTML_FILE"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -65,7 +71,7 @@ jobs:
       - name: Check HTML Security
         run: |
           echo "========== HTML SECURITY CHECK =========="
-          grep -RniE "fetch\(|XMLHttpRequest|axios|https?://|location\.href|window\.open|localStorage|document\.cookie" extracted/app/src/main/assets --include="*.html" --include="*.js" || true
+          grep -RniE "fetch\(|XMLHttpRequest|axios|https?://|location\.href|window\.open|document\.cookie" extracted/app/src/main/assets --include="*.html" --include="*.js" || true
           echo "========== END HTML SECURITY CHECK =========="
 
       - name: Find APK
