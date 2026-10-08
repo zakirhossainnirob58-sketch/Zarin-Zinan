@@ -1,66 +1,1586 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Zarin & Zinan</title>
 
-  </div>
+<style>
+body{
+font-family:system-ui,sans-serif;
+margin:0;
+background:#f5f6f8;
+color:#17202a
+}
+header{
+background:#173b32;
+color:#fff;
+padding:18px
+}
+h1,h2,h3{margin:0 0 8px}
+.wrap{
+max-width:900px;
+margin:auto;
+padding:14px
+}
+nav{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:8px;
+margin:12px 0
+}
+button{
+border:0;
+border-radius:10px;
+padding:11px 12px;
+background:#173b32;
+color:white;
+font-weight:600;
+margin:3px
+}
+button.secondary{
+background:#52796f
+}
+button.danger{
+background:#b42318
+}
+.card{
+background:white;
+border-radius:14px;
+padding:15px;
+margin:10px 0;
+box-shadow:0 2px 10px #0000000d
+}
+.grid{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:10px
+}
+input,select,textarea{
+width:100%;
+box-sizing:border-box;
+padding:11px;
+border:1px solid #ddd;
+border-radius:9px;
+margin:5px 0 10px
+}
+textarea{min-height:70px}
+.stat{
+font-size:22px;
+font-weight:700
+}
+.muted{
+color:#687078;
+font-size:13px
+}
+.hidden{display:none}
+.row{
+display:flex;
+justify-content:space-between;
+gap:10px;
+align-items:center
+}
+.status{
+padding:6px 9px;
+border-radius:20px;
+background:#e9f4ef;
+font-size:12px
+}
+.small{font-size:13px}
+.money{
+font-size:20px;
+font-weight:700
+}
+.profit{color:#16803c}
+.loss{color:#b42318}
+table{
+width:100%;
+border-collapse:collapse;
+font-size:13px
+}
+th,td{
+border:1px solid #ddd;
+padding:8px;
+text-align:left
+}
+th{background:#f0f4f2}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="wrap">
+<h1>🏪 Zarin & Zinan</h1>
+<div>Panjabi • কাপড় • সেলাই • অর্ডার • হিসাব</div>
+</div>
+</header>
+
+<div class="wrap">
+
+<!-- USER -->
+<div class="card">
+<b>🔐 ব্যবহারকারী</b>
+<select id="role" onchange="setRole(this.value)">
+<option value="admin">Admin — দোকানদার</option>
+<option value="customer">Customer — অর্ডার দেখুন</option>
+</select>
+</div>
+
+<!-- MAIN NAVIGATION -->
+<nav>
+<button onclick="show('home')">🏠 Dashboard</button>
+<button onclick="show('orders')">✂️ অর্ডার</button>
+<button onclick="show('stock')">🧵 স্টক</button>
+</nav>
+
+<!-- HOME -->
+<section id="home">
+
+<div class="card">
+<h2>আজকের হিসাব</h2>
+
+<div class="grid">
+
+<div>
+💰 কাপড় বিক্রি
+<div class="stat" id="homeSales">৳0</div>
+</div>
+
+<div>
+📈 মোট লাভ
+<div class="stat profit" id="homeProfit">৳0</div>
+</div>
+
+<div>
+💸 মোট ক্রয়
+<div class="stat" id="homePurchase">৳0</div>
+</div>
+
+<div>
+🧾 মোট বাকি
+<div class="stat" id="homeDue">৳0</div>
+</div>
+
+</div>
+</div>
+
+<div class="card">
+<h2>⚡ দ্রুত কাজ</h2>
+
+<button onclick="show('neworder')">
+➕ নতুন কাস্টম অর্ডার
+</button>
+
+<button onclick="show('newpurchase')">
+🧵 কাপড় ক্রয়
+</button>
+
+<button onclick="show('newsale')">
+🛍️ কাপড় বিক্রয়
+</button>
+
+<button onclick="show('accounts')">
+📊 লাভ-ক্ষতির হিসাব
+</button>
+
+</div>
+
+<div class="card">
+<h2>📦 চলমান অর্ডার</h2>
+<div id="homeOrders"></div>
+</div>
 
 </section>
 
 
-<!-- ================= FABRIC STOCK ================= -->
+<!-- ORDERS -->
+<section id="orders" class="hidden">
+
+<div class="row">
+<h2>✂️ অর্ডার</h2>
+
+<button onclick="show('neworder')">
++ নতুন
+</button>
+</div>
+
+<div id="orderList"></div>
+
+</section>
+
+
+<!-- NEW ORDER -->
+<section id="neworder" class="hidden">
+
+<div class="card">
+
+<h2>নতুন কাস্টম পাঞ্জাবি</h2>
+
+<label>
+কাস্টমারের নাম
+<input id="cname">
+</label>
+
+<label>
+মোবাইল নম্বর
+<input id="phone" inputmode="tel">
+</label>
+
+<label>
+কাপড়
+<input id="fabric">
+</label>
+
+<div class="grid">
+
+<label>
+বুক (ইঞ্চি)
+<input id="chest">
+</label>
+
+<label>
+লম্বা
+<input id="length">
+</label>
+
+<label>
+হাতা
+<input id="sleeve">
+</label>
+
+<label>
+কাঁধ
+<input id="shoulder">
+</label>
+
+</div>
+
+<label>
+মোট বিক্রয়মূল্য
+<input id="price" type="number">
+</label>
+
+<label>
+অগ্রিম
+<input id="advance" type="number" value="0">
+</label>
+
+<label>
+ডেলিভারি তারিখ
+<input id="delivery" type="date">
+</label>
+
+<label>
+নোট
+<textarea id="note"></textarea>
+</label>
+
+<button onclick="addOrder()">
+💾 অর্ডার সংরক্ষণ
+</button>
+
+</div>
+
+</section>
+
+
+<!-- STOCK -->
 <section id="stock" class="hidden">
 
-  <div class="row">
-    <h2>🧵 কাপড় ক্রয় ও বিক্রয়</h2>
-    <button onclick="newFabric()">+ কাপড় ক্রয়</button>
-  </div>
+<div class="row">
+<h2>🧵 কাপড়ের স্টক</h2>
 
-  <div class="info">
-    এখানে কাপড় যোগ করলে সেটি <b>ক্রয়</b> হিসেবে হিসাব হবে।
-    পরে বিক্রি করলে স্টক কমবে এবং ক্রয়মূল্য বাদ দিয়ে <b>লাভ</b> হিসাব হবে।
-  </div>
+<button onclick="show('newpurchase')">
++ ক্রয়
+</button>
+</div>
 
-  <div id="stockSummary"></div>
+<div class="card">
 
-  <div id="stockList"></div>
+<h3>📦 বর্তমান স্টক</h3>
+
+<div id="stockList"></div>
+
+</div>
 
 </section>
 
 
-<!-- ================= NEW FABRIC / PURCHASE ================= -->
-<section id="newstock" class="hidden">
+<!-- NEW PURCHASE -->
+<section id="newpurchase" class="hidden">
 
-  <div class="card">
+<div class="card">
 
-    <div class="row">
-      <h2 id="fabricFormTitle">🧵 নতুন কাপড় ক্রয়</h2>
-      <button class="light" onclick="show('stock')">✕ বন্ধ</button>
-    </div>
+<h2>🧵 কাপড় ক্রয়</h2>
 
-    <input type="hidden" id="editFabricId">
+<label>
+কাপড়ের নাম
+<input id="purchaseName" placeholder="যেমন: সাদা কটন">
+</label>
 
-    <label>
-      কাপড়ের নাম
-      <input id="sname" placeholder="যেমন: সুতি, গ্যাবার্ডিন">
-    </label>
+<label>
+রং
+<input id="purchaseColor">
+</label>
 
-    <label>
-      রং
-      <input id="color" placeholder="যেমন: সাদা, কালো">
-    </label>
+<div class="grid">
 
-    <label>
-      পরিমাণ (গজ)
-      <input id="qty" type="number" min="0" step="0.01">
-    </label>
+<label>
+পরিমাণ (গজ)
+<input id="purchaseQty" type="number" step="0.01">
+</label>
 
-    <label>
-      ক্রয়মূল্য / গজ
-      <input id="buy" type="number" min="0">
-    </label>
+<label>
+প্রতি গজ ক্রয়মূল্য
+<input id="purchasePrice" type="number">
+</label>
 
-    <label>
-      বিক্রয়মূল্য / গজ
-      <input id="sell" type="number" min="0">
-    </label>
+</div>
 
-    <div class="info">
-      মোট ক্রয়মূল্য:
-      <b id="purchasePreview">৳0</b>
+<label>
+সরবরাহকারী / দোকানের নাম
+<input id="purchaseSupplier">
+</label>
+
+<button onclick="addPurchase()">
+💾 ক্রয় সংরক্ষণ
+</button>
+
+<button class="secondary" onclick="show('purchaseList')">
+📋 ক্রয়ের তালিকা
+</button>
+
+</div>
+
+</section>
+
+
+<!-- PURCHASE LIST -->
+<section id="purchaseList" class="hidden">
+
+<div class="row">
+<h2>📋 কাপড় ক্রয়ের তালিকা</h2>
+
+<button onclick="show('newpurchase')">
++ নতুন
+</button>
+</div>
+
+<div class="card">
+<div id="purchaseTable"></div>
+</div>
+
+</section>
+
+
+<!-- NEW SALE -->
+<section id="newsale" class="hidden">
+
+<div class="card">
+
+<h2>🛍️ কাপড় বিক্রয়</h2>
+
+<label>
+কাপড়ের নাম
+<input id="saleName" placeholder="যেমন: সাদা কটন">
+</label>
+
+<div class="grid">
+
+<label>
+পরিমাণ (গজ)
+<input id="saleQty" type="number" step="0.01">
+</label>
+
+<label>
+প্রতি গজ বিক্রয়মূল্য
+<input id="salePrice" type="number">
+</label>
+
+</div>
+
+<label>
+ক্রেতার নাম
+<input id="saleCustomer">
+</label>
+
+<label>
+মোবাইল নম্বর
+<input id="salePhone">
+</label>
+
+<button onclick="addSale()">
+💾 বিক্রয় সংরক্ষণ
+</button>
+
+<button class="secondary" onclick="show('saleList')">
+📋 বিক্রয়ের তালিকা
+</button>
+
+</div>
+
+</section>
+
+
+<!-- SALES LIST -->
+<section id="saleList" class="hidden">
+
+<div class="row">
+<h2>📋 বিক্রয়ের তালিকা</h2>
+
+<button onclick="show('newsale')">
++ নতুন
+</button>
+</div>
+
+<div class="card">
+<div id="saleTable"></div>
+</div>
+
+</section>
+
+
+<!-- ACCOUNTS -->
+<section id="accounts" class="hidden">
+
+<div class="card">
+
+<h2>📊 লাভ-ক্ষতির হিসাব</h2>
+
+<div class="grid">
+
+<div>
+🧵 মোট কাপড় ক্রয়
+<div class="money" id="accountPurchase">৳0</div>
+</div>
+
+<div>
+🛍️ মোট কাপড় বিক্রয়
+<div class="money" id="accountSale">৳0</div>
+</div>
+
+<div>
+✂️ সেলাইয়ের আয়
+<div class="money" id="accountOrder">৳0</div>
+</div>
+
+<div>
+🧾 মোট বাকি
+<div class="money" id="accountDue">৳0</div>
+</div>
+
+</div>
+
+<hr>
+
+<p>
+<b>কাপড় বিক্রয়ের লাভ:</b>
+<span id="clothProfit" class="profit">৳0</span>
+</p>
+
+<p>
+<b>সেলাইয়ের আয়:</b>
+<span id="tailoringIncome" class="profit">৳0</span>
+</p>
+
+<p>
+<b>মোট লাভ:</b>
+<span id="totalProfit" class="profit">৳0</span>
+</p>
+
+</div>
+
+<div class="card">
+
+<h3>ℹ️ হিসাবের নিয়ম</h3>
+
+<p class="small">
+কাপড় বিক্রয়ের লাভ = কাপড় বিক্রয়ের টাকা − সেই কাপড়ের আনুমানিক ক্রয়মূল্য
+</p>
+
+<p class="small">
+সেলাইয়ের আয় = কাস্টম অর্ডারের মোট মূল্য
+</p>
+
+<p class="small">
+মোট লাভ = কাপড় বিক্রয়ের লাভ + সেলাইয়ের আয়
+</p>
+
+</div>
+
+</section>
+
+
+<!-- TRACK -->
+<section id="track" class="hidden">
+
+<div class="card" id="trackCard"></div>
+
+</section>
+
+</div>
+
+
+<script>
+
+/* =========================
+   DATA
+========================= */
+
+let orders =
+JSON.parse(localStorage.getItem("zz_orders") || "[]");
+
+let purchases =
+JSON.parse(localStorage.getItem("zz_purchases") || "[]");
+
+let sales =
+JSON.parse(localStorage.getItem("zz_sales") || "[]");
+
+
+/* =========================
+   SAVE
+========================= */
+
+function save(){
+
+localStorage.setItem(
+"zz_orders",
+JSON.stringify(orders)
+);
+
+localStorage.setItem(
+"zz_purchases",
+JSON.stringify(purchases)
+);
+
+localStorage.setItem(
+"zz_sales",
+JSON.stringify(sales)
+);
+
+render();
+
+}
+
+
+/* =========================
+   NAVIGATION
+========================= */
+
+function setRole(role){
+
+localStorage.setItem(
+"zz_role",
+role
+);
+
+if(role==="customer"){
+show("orders");
+}else{
+show("home");
+}
+
+}
+
+
+function show(id){
+
+document
+.querySelectorAll("section")
+.forEach(x=>x.classList.add("hidden"));
+
+document
+.getElementById(id)
+.classList.remove("hidden");
+
+render();
+
+window.scrollTo(0,0);
+
+}
+
+
+/* =========================
+   ORDER
+========================= */
+
+function addOrder(){
+
+let o={
+
+id:"PN-"+String(Date.now()).slice(-6),
+
+name:document.getElementById("cname").value,
+
+phone:document.getElementById("phone").value,
+
+fabric:document.getElementById("fabric").value,
+
+chest:document.getElementById("chest").value,
+
+length:document.getElementById("length").value,
+
+sleeve:document.getElementById("sleeve").value,
+
+shoulder:document.getElementById("shoulder").value,
+
+price:Number(
+document.getElementById("price").value
+)||0,
+
+advance:Number(
+document.getElementById("advance").value
+)||0,
+
+delivery:document.getElementById("delivery").value,
+
+note:document.getElementById("note").value,
+
+status:"অর্ডার নেওয়া হয়েছে",
+
+created:new Date().toISOString()
+
+};
+
+
+if(!o.name){
+
+alert("কাস্টমারের নাম দিন।");
+return;
+
+}
+
+
+orders.unshift(o);
+
+save();
+
+alert("অর্ডার সফলভাবে সংরক্ষণ হয়েছে।");
+
+show("orders");
+
+}
+
+
+/* =========================
+   PURCHASE
+========================= */
+
+function addPurchase(){
+
+let name=
+document.getElementById("purchaseName").value.trim();
+
+let color=
+document.getElementById("purchaseColor").value.trim();
+
+let qty=
+Number(document.getElementById("purchaseQty").value);
+
+let price=
+Number(document.getElementById("purchasePrice").value);
+
+let supplier=
+document.getElementById("purchaseSupplier").value.trim();
+
+
+if(!name || qty<=0 || price<=0){
+
+alert("কাপড়ের নাম, পরিমাণ এবং ক্রয়মূল্য দিন।");
+
+return;
+
+}
+
+
+purchases.unshift({
+
+id:Date.now(),
+
+name:name,
+
+color:color,
+
+qty:qty,
+
+price:price,
+
+total:qty*price,
+
+supplier:supplier,
+
+date:new Date().toLocaleDateString("bn-BD")
+
+});
+
+
+document.getElementById("purchaseName").value="";
+document.getElementById("purchaseColor").value="";
+document.getElementById("purchaseQty").value="";
+document.getElementById("purchasePrice").value="";
+document.getElementById("purchaseSupplier").value="";
+
+
+save();
+
+alert("কাপড় ক্রয়ের হিসাব সংরক্ষণ হয়েছে।");
+
+show("stock");
+
+}
+
+
+/* =========================
+   SALE
+========================= */
+
+function addSale(){
+
+let name=
+document.getElementById("saleName").value.trim();
+
+let qty=
+Number(document.getElementById("saleQty").value);
+
+let price=
+Number(document.getElementById("salePrice").value);
+
+let customer=
+document.getElementById("saleCustomer").value.trim();
+
+let phone=
+document.getElementById("salePhone").value.trim();
+
+
+if(!name || qty<=0 || price<=0){
+
+alert("কাপড়ের নাম, পরিমাণ এবং বিক্রয়মূল্য দিন।");
+
+return;
+
+}
+
+
+sales.unshift({
+
+id:Date.now(),
+
+name:name,
+
+qty:qty,
+
+price:price,
+
+total:qty*price,
+
+customer:customer,
+
+phone:phone,
+
+date:new Date().toLocaleDateString("bn-BD")
+
+});
+
+
+document.getElementById("saleName").value="";
+document.getElementById("saleQty").value="";
+document.getElementById("salePrice").value="";
+document.getElementById("saleCustomer").value="";
+document.getElementById("salePhone").value="";
+
+
+save();
+
+alert("কাপড় বিক্রয়ের হিসাব সংরক্ষণ হয়েছে।");
+
+show("newsale");
+
+}
+
+
+/* =========================
+   COST CALCULATION
+========================= */
+
+function getUnitCost(name){
+
+let list=
+purchases.filter(
+p=>p.name.trim().toLowerCase()
+===name.trim().toLowerCase()
+);
+
+if(!list.length){
+
+return 0;
+
+}
+
+let totalQty=0;
+let totalCost=0;
+
+list.forEach(p=>{
+
+totalQty+=Number(p.qty)||0;
+
+totalCost+=Number(p.total)||0;
+
+});
+
+if(totalQty<=0)return 0;
+
+return totalCost/totalQty;
+
+}
+
+
+/* =========================
+   ORDER STATUS
+========================= */
+
+function setStatus(i){
+
+let statusList=[
+
+"অর্ডার নেওয়া হয়েছে",
+
+"কাপড় কাটা হয়েছে",
+
+"সেলাই চলছে",
+
+"ফিনিশিং/চেকিং",
+
+"প্রস্তুত",
+
+"ডেলিভারি সম্পন্ন"
+
+];
+
+let current=
+statusList.indexOf(orders[i].status);
+
+if(current<0)current=0;
+
+orders[i].status=
+statusList[
+(current+1)%statusList.length
+];
+
+save();
+
+}
+
+
+/* =========================
+   CUSTOMER VIEW
+========================= */
+
+function track(i){
+
+let o=orders[i];
+
+let due=
+Math.max(
+0,
+Number(o.price||0)-
+Number(o.advance||0)
+);
+
+
+show("track");
+
+document.getElementById("trackCard").innerHTML=`
+
+<h2>📦 ${o.id}</h2>
+
+<h3>${o.name}</h3>
+
+<p>
+👕 কাপড়:
+${o.fabric||"—"}
+</p>
+
+<p>
+📅 ডেলিভারি:
+${o.delivery||"নির্ধারিত নয়"}
+</p>
+
+<p>
+💰 মোট:
+৳${o.price||0}
+</p>
+
+<p>
+💳 অগ্রিম:
+৳${o.advance||0}
+</p>
+
+<p>
+🧾 বাকি:
+৳${due}
+</p>
+
+<hr>
+
+<b>বর্তমান অবস্থা:</b>
+
+<p class="status">
+${o.status}
+</p>
+
+<p class="small">
+মাপ:
+বুক ${o.chest||"-"},
+লম্বা ${o.length||"-"},
+হাতা ${o.sleeve||"-"},
+কাঁধ ${o.shoulder||"-"}
+</p>
+
+${o.note?
+"<p>📝 নোট: "+o.note+"</p>":
+""}
+
+`;
+
+}
+
+
+/* =========================
+   WHATSAPP
+========================= */
+
+function wa(i){
+
+let o=orders[i];
+
+if(!o.phone){
+
+alert("এই অর্ডারে মোবাইল নম্বর নেই।");
+
+return;
+
+}
+
+let due=
+Number(o.price||0)-
+Number(o.advance||0);
+
+let msg=
+
+`Zarin & Zinan
+অর্ডার: ${o.id}
+কাস্টমার: ${o.name}
+বর্তমান অবস্থা: ${o.status}
+ডেলিভারি: ${o.delivery||"নির্ধারিত নয়"}
+মোট: ৳${o.price||0}
+বাকি: ৳${due}`;
+
+let url=
+"https://wa.me/"+
+o.phone.replace(/\D/g,"")+
+"?text="+
+encodeURIComponent(msg);
+
+window.location.href=url;
+
+}
+
+
+/* =========================
+   RENDER ORDERS
+========================= */
+
+function renderOrders(){
+
+let box=
+document.getElementById("orderList");
+
+if(!orders.length){
+
+box.innerHTML=
+'<div class="card muted">এখনও কোনো অর্ডার নেই।</div>';
+
+}else{
+
+box.innerHTML=
+orders.map((o,i)=>{
+
+let due=
+Math.max(
+0,
+Number(o.price||0)-
+Number(o.advance||0)
+);
+
+return `
+
+<div class="card">
+
+<div class="row">
+
+<b>
+${o.id} — ${o.name}
+</b>
+
+<span class="status">
+${o.status}
+</span>
+
+</div>
+
+<div class="small">
+
+📅 ${o.delivery||"—"}
+
+|
+
+💰 ৳${o.price||0}
+
+|
+
+🧾 বাকি ৳${due}
+
+</div>
+
+<br>
+
+<button onclick="track(${i})">
+👁️ কাস্টমার ভিউ
+</button>
+
+<button onclick="wa(${i})">
+💬 WhatsApp
+</button>
+
+<button onclick="setStatus(${i})">
+➡️ পরের ধাপ
+</button>
+
+</div>
+
+`;
+
+}).join("");
+
+}
+
+}
+
+
+/* =========================
+   HOME ORDERS
+========================= */
+
+function renderHomeOrders(){
+
+let box=
+document.getElementById("homeOrders");
+
+let active=
+orders.filter(
+o=>o.status!=="ডেলিভারি সম্পন্ন"
+);
+
+if(!active.length){
+
+box.innerHTML=
+'<p class="muted">কোনো চলমান অর্ডার নেই।</p>';
+
+return;
+
+}
+
+box.innerHTML=
+active.slice(0,5).map(o=>`
+
+<div class="card">
+
+<b>${o.name}</b>
+
+<br>
+
+<span class="status">
+${o.status}
+</span>
+
+· ${o.delivery||"—"}
+
+</div>
+
+`).join("");
+
+}
+
+
+/* =========================
+   STOCK
+========================= */
+
+function renderStock(){
+
+let stock={};
+
+purchases.forEach(p=>{
+
+let key=p.name.trim();
+
+if(!stock[key]){
+
+stock[key]={
+qty:0,
+cost:0,
+color:p.color||""
+};
+
+}
+
+stock[key].qty+=
+Number(p.qty)||0;
+
+stock[key].cost+=
+Number(p.total)||0;
+
+});
+
+
+sales.forEach(s=>{
+
+let key=s.name.trim();
+
+if(!stock[key]){
+
+stock[key]={
+qty:0,
+cost:0,
+color:""
+};
+
+}
+
+stock[key].qty-=
+Number(s.qty)||0;
+
+});
+
+
+let names=
+Object.keys(stock);
+
+let box=
+document.getElementById("stockList");
+
+if(!names.length){
+
+box.innerHTML=
+'<p class="muted">এখনও কোনো কাপড়ের স্টক নেই।</p>';
+
+return;
+
+}
+
+
+box.innerHTML=
+names.map(name=>{
+
+let s=stock[name];
+
+let unit=
+s.cost>0 && s.qty+soldQty(name)>0
+?s.cost/(s.qty+soldQty(name))
+:0;
+
+return `
+
+<div class="card">
+
+<div class="row">
+
+<b>${name}</b>
+
+<b>
+${s.qty.toFixed(2)} গজ
+</b>
+
+</div>
+
+<div class="small">
+
+${s.color||""}
+
+|
+
+আনুমানিক ক্রয়মূল্য:
+৳${unit.toFixed(2)}/গজ
+
+</div>
+
+</div>
+
+`;
+
+}).join("");
+
+}
+
+
+/* Helper for stock calculation */
+
+function soldQty(name){
+
+return sales
+.filter(
+s=>s.name.trim().toLowerCase()
+===name.trim().toLowerCase()
+)
+.reduce(
+(a,s)=>a+(Number(s.qty)||0),
+0
+);
+
+}
+
+
+/* =========================
+   PURCHASE TABLE
+========================= */
+
+function renderPurchases(){
+
+let box=
+document.getElementById("purchaseTable");
+
+if(!purchases.length){
+
+box.innerHTML=
+'<p class="muted">কোনো ক্রয়ের হিসাব নেই।</p>';
+
+return;
+
+}
+
+
+box.innerHTML=`
+
+<table>
+
+<tr>
+<th>কাপড়</th>
+<th>গজ</th>
+<th>মোট</th>
+<th>তারিখ</th>
+</tr>
+
+${purchases.map(p=>`
+
+<tr>
+
+<td>
+${p.name}
+<br>
+<span class="small">
+${p.color||""}
+</span>
+</td>
+
+<td>
+${p.qty}
+</td>
+
+<td>
+৳${p.total}
+</td>
+
+<td>
+${p.date}
+</td>
+
+</tr>
+
+`).join("")}
+
+</table>
+
+`;
+
+}
+
+
+/* =========================
+   SALES TABLE
+========================= */
+
+function renderSales(){
+
+let box=
+document.getElementById("saleTable");
+
+if(!sales.length){
+
+box.innerHTML=
+'<p class="muted">কোনো বিক্রয়ের হিসাব নেই।</p>';
+
+return;
+
+}
+
+
+box.innerHTML=`
+
+<table>
+
+<tr>
+<th>কাপড়</th>
+<th>গজ</th>
+<th>মোট</th>
+<th>ক্রেতা</th>
+</tr>
+
+${sales.map(s=>`
+
+<tr>
+
+<td>${s.name}</td>
+
+<td>${s.qty}</td>
+
+<td>৳${s.total}</td>
+
+<td>${s.customer||"-"}</td>
+
+</tr>
+
+`).join("")}
+
+</table>
+
+`;
+
+}
+
+
+/* =========================
+   ACCOUNT
+========================= */
+
+function renderAccounts(){
+
+let purchaseTotal=
+purchases.reduce(
+(a,p)=>a+(Number(p.total)||0),
+0
+);
+
+let saleTotal=
+sales.reduce(
+(a,s)=>a+(Number(s.total)||0),
+0
+);
+
+
+/*
+প্রতিটি কাপড়ের বিক্রয়ের সময়
+সেই কাপড়ের গড় ক্রয়মূল্য দিয়ে
+আনুমানিক খরচ বের করা হচ্ছে।
+*/
+
+let saleCost=0;
+
+sales.forEach(s=>{
+
+let unit=
+getUnitCost(s.name);
+
+saleCost+=
+unit*(Number(s.qty)||0);
+
+});
+
+
+let clothProfit=
+saleTotal-saleCost;
+
+
+let orderIncome=
+orders.reduce(
+(a,o)=>a+(Number(o.price)||0),
+0
+);
+
+
+let totalDue=
+orders.reduce(
+(a,o)=>
+a+
+Math.max(
+0,
+(Number(o.price)||0)-
+(Number(o.advance)||0)
+),
+0
+);
+
+
+let totalProfit=
+clothProfit+orderIncome;
+
+
+document.getElementById(
+"accountPurchase"
+).textContent=
+"৳"+purchaseTotal.toLocaleString("bn-BD");
+
+
+document.getElementById(
+"accountSale"
+).textContent=
+"৳"+saleTotal.toLocaleString("bn-BD");
+
+
+document.getElementById(
+"accountOrder"
+).textContent=
+"৳"+orderIncome.toLocaleString("bn-BD");
+
+
+document.getElementById(
+"accountDue"
+).textContent=
+"৳"+totalDue.toLocaleString("bn-BD");
+
+
+document.getElementById(
+"clothProfit"
+).textContent=
+"৳"+clothProfit.toLocaleString("bn-BD");
+
+
+document.getElementById(
+"tailoringIncome"
+).textContent=
+"৳"+orderIncome.toLocaleString("bn-BD");
+
+
+document.getElementById(
+"totalProfit"
+).textContent=
+"৳"+totalProfit.toLocaleString("bn-BD");
+
+}
+
+
+/* =========================
+   DASHBOARD
+========================= */
+
+function renderDashboard(){
+
+let saleTotal=
+sales.reduce(
+(a,s)=>a+(Number(s.total)||0),
+0
+);
+
+let purchaseTotal=
+purchases.reduce(
+(a,p)=>a+(Number(p.total)||0),
+0
+);
+
+
+let saleCost=0;
+
+sales.forEach(s=>{
+
+saleCost+=
+getUnitCost(s.name)*
+(Number(s.qty)||0);
+
+});
+
+
+let clothProfit=
+saleTotal-saleCost;
+
+
+let orderIncome=
+orders.reduce(
+(a,o)=>a+(Number(o.price)||0),
+0
+);
+
+
+let due=
+orders.reduce(
+(a,o)=>
+a+
+Math.max(
+0,
+(Number(o.price)||0)-
+(Number(o.advance)||0)
+),
+0
+);
+
+
+let totalProfit=
+clothProfit+orderIncome;
+
+
+document.getElementById(
+"homeSales"
+).textContent=
+"৳"+saleTotal.toLocaleString("bn-BD");
+
+
+document.getElementById(
+"homeProfit"
+).textContent=
+"৳"+totalProfit.toLocaleString("bn-BD");
+
+
+document.getElementById(
+"homePurchase"
+).textContent=
+"৳"+purchaseTotal.toLocaleString("bn-BD");
+
+
+document.getElementById(
+"homeDue"
+).textContent=
+"৳"+due.toLocaleString("bn-BD");
+
+}
+
+
+/* =========================
+   RENDER EVERYTHING
+========================= */
+
+function render(){
+
+renderDashboard();
+
+renderHomeOrders();
+
+renderOrders();
+
+renderStock();
+
+renderPurchases();
+
+renderSales();
+
+renderAccounts();
+
+}
+
+
+/* START */
+
+render();
+
+</script>
+
+</body>
+</html>
